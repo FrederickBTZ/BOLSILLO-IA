@@ -293,8 +293,8 @@ async function enviarMensaje() {
   try {
     const reply = await engine.chat.completions.create({
       messages: chatMessages,
-      temperature: 0.7,
-      max_tokens: 6144
+      temperature: 0.9,
+      max_tokens: 8192
     });
     const respuesta = reply.choices[0].message.content;
     respuestaDiv.textContent = respuesta;
