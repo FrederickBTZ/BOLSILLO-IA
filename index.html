@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>🧠 IAs Reales • Thaurock</title>
+  <style>
+    :root { --primary: #00ff9d; --bg: #0f0f0f; --card: #1a1a1a; --text: #e0e0e0; }
+    * { box-sizing: border-box; }
+    body { 
+      margin:0; font-family: system-ui, sans-serif; 
+      background: var(--bg); color: var(--text); 
+      height: 100vh; overflow: hidden; touch-action: manipulation; 
+    }
+    #startup { 
+      position: fixed; inset: 0; background: var(--bg); 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      padding: 16px; text-align: center; z-index: 9999; 
+    }
+    #startup.hidden { display: none; }
+    h1 { color: var(--primary); margin-bottom: 8px; font-size: 2rem; }
+    p { margin: 8px 0; color: #aaa; font-size: 0.95rem; }
+    button.big { 
+      margin: 24px auto; padding: 14px 28px; font-size: 1.05rem; font-weight: bold; 
+      background: var(--primary); color: #000; border: none; border-radius: 12px; 
+      cursor: pointer; transition: 0.2s; 
+    }
+    button.big:hover { opacity: 0.92; transform: scale(1.02); }
+    button.big:disabled { opacity: 0.5; cursor: not-allowed; }
+    .progress-container { 
+      width: 90%; max-width: 420px; height: 20px; background: #333; 
+      border-radius: 10px; overflow: hidden; margin: 16px 0; 
+    }
+    .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #00ff9d, #00c080); transition: width 0.3s ease; }
+    .progress-text { font-size: 0.9rem; margin-top: 8px; color: #ccc; }
+
+    .main-ui { display: none; height: 100vh; }
+    .main-ui.visible { display: flex; }
+    .container { display: flex; height: 100%; min-width: 0; }
+    .sidebar { 
+      width: 280px; background: var(--card); padding: 16px; overflow-y: auto; 
+      transition: transform 0.4s; z-index: 100; min-width: 0; 
+    }
+    @media (max-width: 768px) { 
+      .sidebar { position: fixed; left: 0; top: 0; bottom: 0; transform: translateX(-100%); width: 280px; box-shadow: 5px 0 20px rgba(0,0,0,0.7); } 
+      .sidebar.active { transform: translateX(0); } 
+    }
+    .bot-button { 
+      display: block; width: 100%; padding: 14px; margin: 8px 0; background: #333; color: #fff; 
+      border: none; border-radius: 12px; text-align: left; font-size: 15px; cursor: pointer; transition: 0.2s; 
+    }
+    .bot-button.active, .bot-button:hover { background: var(--primary); color: #000; font-weight: bold; }
+
+    .chat-area { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+    .header { 
+      background: #222; padding: 12px 16px; font-size: 17px; font-weight: bold; 
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap; 
+    }
+    .hamburger { font-size: 26px; cursor: pointer; display: none; padding: 0 8px; }
+    @media (max-width: 768px) { .hamburger { display: block; } }
+
+    .messages { 
+      flex: 1; padding: 16px 12px 100px 12px; overflow-y: auto; background: #111; 
+      display: flex; flex-direction: column; 
+    }
+    .message { 
+      margin: 10px 0; padding: 12px 16px; border-radius: 16px; 
+      max-width: 92%; line-height: 1.45; word-break: break-word; overflow-wrap: break-word; hyphens: auto; 
+    }
+    .user { background: var(--primary); color: #000; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .bot { background: #333; align-self: flex-start; border-bottom-left-radius: 4px; }
+
+    .input-area { 
+      position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); 
+      padding: 12px 12px; display: flex; gap: 8px; z-index: 200; border-top: 1px solid #333; 
+    }
+    input { 
+      flex: 1 1 auto; padding: 14px 16px; border: none; border-radius: 25px; 
+      font-size: 15px; background: #222; color: #fff; min-width: 0; 
+    }
+    button.send { 
+      padding: 14px 24px; background: var(--primary); color: #000; border: none; 
+      border-radius: 25px; font-weight: bold; white-space: nowrap; cursor: pointer; 
+      flex-shrink: 0; 
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 1.6rem; }
+      .bot-button { font-size: 14px; padding: 12px; }
+      .message { font-size: 14px; padding: 10px 14px; }
+      input, button.send { font-size: 14px; padding: 12px 14px; }
+      .header { font-size: 16px; padding: 10px 14px; }
+      .messages { padding: 12px 10px 90px 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="startup">
+  <h1>🧠 IAs Reales</h1>
+<p>Modelo Llama-3.1-8B-Instruct (~4.8–5.5 GB)</p>
+<p>Descarga única • 100% offline después</p>
+<p style="color:#ff9800; font-size:0.95rem; max-width:360px;">
+  Descarga por partes (streaming) para no saturar tu conexión.<br>
+  Puede tardar 10–25 minutos según tu internet. ¡Es uno de los más potentes y actualizados que corren offline en navegador!
+</p>
+
+  <button class="big" id="startDownload">Iniciar descarga del modelo</button>
+
+  <div class="progress-container" id="progressContainer" style="display:none;">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-text" id="progressText"></div>
+</div>
+
+<div class="main-ui container" id="mainUI">
+  <div class="sidebar" id="sidebar">
+    <h2 style="color:var(--primary); text-align:center;">IAs Especializadas</h2>
+    <button class="bot-button active" data-bot="matematicas">📐 Matemáticas</button>
+    <button class="bot-button" data-bot="historia">📜 Historia</button>
+    <button class="bot-button" data-bot="cocina">🍳 Cocina</button>
+    <button class="bot-button" data-bot="consejos">🌟 Consejos de Vida</button>
+    <div style="margin-top:30px; font-size:12px; text-align:center; color:#666;">
+      Hecho con ❤️ por Thaurock • Offline Real • Privado & Seguro
+    </div>
+  </div>
+
+  <div class="chat-area">
+    <div class="header" id="bot-name">
+      <span class="hamburger" id="hamburger">☰</span>
+      📐 IA Matemáticas
+    </div>
+    <div class="messages" id="messages"></div>
+  </div>
+</div>
+
+<div class="input-area" id="inputArea" style="display:none;">
+  <input type="text" id="user-input" placeholder="Escribe tu pregunta..."/>
+  <button class="send" id="sendBtn">Enviar</button>
+</div>
+
+<script type="module">
+import { CreateMLCEngine } from "https://esm.run/@mlc-ai/web-llm@0.2.79";
+
+const startup = document.getElementById("startup");
+const mainUI = document.getElementById("mainUI");
+const inputArea = document.getElementById("inputArea");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+const progressContainer = document.getElementById("progressContainer");
+const startBtn = document.getElementById("startDownload");
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("user-input");
+const sidebar = document.getElementById("sidebar");
+
+let engine = null;
+let currentBot = "matematicas";
+let chatMessages = [];
+
+const personas = {
+  matematicas: { 
+    nombre: "📐 Matemáticas", 
+    system: "Siempre responde en español neutro de Argentina. Eres un experto en Matemáticas. Explícalas paso a paso con ejemplos claros."
+  },
+  historia: { 
+    nombre: "📜 Historia", 
+    system: "Siempre responde en español neutro de Argentina. Eres un experto en Historia. Explícalas paso a paso con ejemplos claros."
+  },
+  cocina: { 
+    nombre: "🍳 Cocina", 
+    system: "Siempre responde en español neutro de Argentina. Eres un experto en Cocina. Explícalas paso a paso con ejemplos claros."
+  },
+  consejos: { 
+    nombre: "🌟 Consejos de Vida", 
+    system: "Siempre responde en español neutro de Argentina. Eres un experto en Motivacion Realista. Consejos prácticos y accionables."
+  }
+};
+
+startBtn.onclick = async () => {
+  startBtn.disabled = true;
+  startBtn.textContent = "Descargando... no cierres";
+  progressContainer.style.display = "block";
+
+  try {
+    engine = await CreateMLCEngine(
+      "Llama-3.1-8B-Instruct-q4f16_1-MLC",
+      {
+        initProgressCallback: (report) => {
+          const pct = Math.round(report.progress * 100);
+          progressBar.style.width = pct + "%";
+          progressText.textContent = `\( {pct}% • \){report.text || "Cargando..."} (${Math.round(report.timeElapsed / 1000)}s)`;
+        }
+      }
+    );
+
+    progressText.textContent = "¡Modelo cargado! Iniciando...";
+    setTimeout(() => {
+      startup.classList.add("hidden");
+      mainUI.classList.add("visible");
+      inputArea.style.display = "flex";
+      cambiarBot("matematicas");
+      attachEvents();
+    }, 1500);
+  } catch (err) {
+    progressText.innerHTML = `Error: ${err.message || err}<br>Recarga o usa Chrome/Edge actualizado.<br>Dime el error si persiste.`;
+    startBtn.disabled = false;
+    startBtn.textContent = "Reintentar descarga";
+  }
+};
+
+function attachEvents() {
+  const hamburger = document.getElementById("hamburger");
+  if (hamburger) {
+    hamburger.replaceWith(hamburger.cloneNode(true));
+    const newHamburger = document.getElementById("hamburger");
+    newHamburger.addEventListener("click", () => sidebar.classList.toggle("active"));
+    newHamburger.addEventListener("touchstart", () => sidebar.classList.toggle("active"), { passive: true });
+  }
+
+  document.querySelectorAll('.bot-button').forEach(btn => {
+    btn.addEventListener("click", () => cambiarBot(btn.dataset.bot));
+    btn.addEventListener("touchstart", () => cambiarBot(btn.dataset.bot), { passive: true });
+  });
+
+  if (sendBtn) {
+    sendBtn.addEventListener("click", enviarMensaje);
+    sendBtn.addEventListener("touchstart", enviarMensaje, { passive: true });
+  }
+
+  if (userInput) {
+    userInput.addEventListener("keypress", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        enviarMensaje();
+      }
+    });
+  }
+}
+
+function cambiarBot(id) {
+  currentBot = id;
+  document.getElementById("bot-name").innerHTML = `<span id="hamburger">☰</span> ${personas[id].nombre}`;
+
+  document.querySelectorAll(".bot-button").forEach(el => el.classList.toggle("active", el.dataset.bot === id));
+
+  const idiomaObligatorio = "Responde SIEMPRE en español neutro de Argentina, claro y directo. Nunca uses inglés ni otros idiomas a menos que el usuario lo pida explícitamente. Cuando el tema lo permita, da respuestas **muy detalladas, extensas y completas** (apunta a 2000–4000 caracteres cuando sea útil y el usuario no pida algo breve). Explica todo paso a paso, incluye ejemplos, contexto adicional y razonamiento profundo. No seas breve a menos que se pida explícitamente.";
+
+  chatMessages = [{ role: "system", content: idiomaObligatorio + personas[id].system }];
+
+  const msgDiv = document.getElementById("messages");
+  msgDiv.innerHTML = `<div class="message bot">¡Hola! 👋 Soy tu IA real especializada en <strong>${personas[id].nombre}</strong>.<br>¿En qué te ayudo hoy?</div>`;
+  msgDiv.scrollTop = msgDiv.scrollHeight;
+
+  sidebar.classList.remove("active");
+  setTimeout(attachEvents, 300);
+}
+
+async function enviarMensaje() {
+  if (!engine) {
+    alert("El modelo aún no terminó de cargar. Espera unos segundos más.");
+    return;
+  }
+
+  const texto = userInput.value.trim();
+  if (!texto) return;
+
+  const msgDiv = document.getElementById("messages");
+  msgDiv.innerHTML += `<div class="message user">${texto}</div>`;
+  msgDiv.scrollTop = msgDiv.scrollHeight;
+
+  if (!chatMessages.some(m => m.content.includes("Siempre responde en español"))) {
+    chatMessages.unshift({ role: "system", content: "Siempre responde en español neutro de Argentina, claro y directo." });
+  }
+
+  chatMessages.push({ role: "user", content: texto });
+  userInput.value = "";
+
+  const respuestaDiv = document.createElement("div");
+  respuestaDiv.className = "message bot";
+  respuestaDiv.textContent = "Generando respuesta... (puede tardar 20–60 s la primera vez)";
+  msgDiv.appendChild(respuestaDiv);
+  msgDiv.scrollTop = msgDiv.scrollHeight;
+
+  try {
+    const reply = await engine.chat.completions.create({
+      messages: chatMessages,
+      temperature: 0.7,
+      max_tokens: 4096
+    });
+    const respuesta = reply.choices[0].message.content;
+    respuestaDiv.textContent = respuesta;
+    chatMessages.push({ role: "assistant", content: respuesta });
+  } catch (e) {
+    respuestaDiv.textContent = "Error al generar respuesta. Intenta otra pregunta o recarga.";
+  }
+}
+
+attachEvents();
+</script>
+</body>
+</html>
