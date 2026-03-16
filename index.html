@@ -186,7 +186,7 @@ startBtn.onclick = async () => {
 
   try {
     engine = await CreateMLCEngine(
-      "Llama-3.1-8B-Instruct-q4f16_1-MLC",
+      "Phi-3.5-mini-instruct-q4f16_1-MLC",
       {
         initProgressCallback: (report) => {
           const pct = Math.round(report.progress * 100);
